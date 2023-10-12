@@ -1,0 +1,167 @@
+#Версия 1
+#создай приложение для запоминания информации
+from PyQt5.QtCore import *
+from PyQt5.QtWidgets import *
+from random import*
+
+class Q():
+    def __init__ (self, q, right, wrong1, wrong2, wrong3):
+        self.q = q
+        self.right = right
+        self.wrong1 = wrong1
+        self.wrong2 = wrong2
+        self.wrong3 = wrong3
+
+question_list = []
+question_list.append(Q('Какой национальности не существует?', 'Смурфы', 'Энцы', 'Чулымцы',  'Алеуты'))
+question_list.append(Q('Какого города не существует?', 'Жуковский', 'Ельцин', 'Борисов',  'Войтюк'))
+question_list.append(Q('Ты участвуешь в забеге и обгоняешь человека, занявшего 2 место. На каком месте ты?', '2', '1', '3', '4'))
+question_list.append(Q('Один человек мог угадать счет матча до начала игры. Какой был счет?', '0:0', '165411:5431', '1:1', '45:0'))
+question_list.append(Q('Известный код из Матрицы на самом деле означает....', 'Рецепт суши', 'Имя режиссера', 'Python', 'Задачу для 1 класса'))
+
+app = QApplication([])
+
+
+#Окно - вопрос
+Question = QLabel('Какой национальности не существует?')
+QuestionGroupBox = QGroupBox('Варианты ответа')
+btn1 = QRadioButton('1')
+btn2 = QRadioButton('2')
+btn3 = QRadioButton('3')
+btn4 = QRadioButton('4')
+Btn = QPushButton('Ответить')
+
+RadioGroup = QButtonGroup()
+RadioGroup.addButton(btn1)
+RadioGroup.addButton(btn2)
+RadioGroup.addButton(btn3)
+RadioGroup.addButton(btn4)
+
+layout_ans1 = QHBoxLayout()
+layout_ans2 = QVBoxLayout()
+layout_ans3 = QVBoxLayout()
+
+layout_ans2.addWidget(btn1)
+layout_ans2.addWidget(btn2)
+layout_ans3.addWidget(btn3)
+layout_ans3.addWidget(btn4)
+
+layout_ans1.addLayout(layout_ans2)
+layout_ans1.addLayout(layout_ans3)
+QuestionGroupBox.setLayout(layout_ans1)
+
+line1 = QHBoxLayout()
+line2 = QHBoxLayout()
+line3 = QHBoxLayout()
+
+line1.addWidget(Question, alignment=Qt.AlignVCenter)
+line2.addWidget(QuestionGroupBox)
+line3.addWidget(Btn)
+layout_card = QVBoxLayout()
+layout_card.addLayout(line1)
+layout_card.addLayout(line2)
+layout_card.addLayout(line3)
+
+Res = QLabel('Какой национальности не существует?')
+ResGroupBox = QGroupBox('Результат')
+Correct = QLabel('Правильно!')
+Total = QLabel('Смурфы')
+
+layout_res = QVBoxLayout()
+layout_res.addWidget(Correct, alignment=Qt.AlignTop)
+layout_res.addWidget(Total, alignment=Qt.AlignCenter)
+
+line_res_1 = QHBoxLayout()
+line_res_2 = QHBoxLayout()
+line_res_3 = QHBoxLayout()
+
+line_res_1.addWidget(Res)
+line_res_2.addWidget(ResGroupBox)
+line_res_2.addWidget(QuestionGroupBox)
+ResGroupBox.hide()
+line_res_3.addWidget(Btn)
+
+layout_card = QVBoxLayout()
+layout_card.addLayout(line_res_1)
+layout_card.addLayout(line_res_2)
+layout_card.addLayout(line_res_3)
+ResGroupBox.setLayout(layout_res)
+
+
+
+def show_res():
+    QuestionGroupBox.hide()
+    ResGroupBox.show()
+    Btn.setText('Следующий вопрос')
+
+
+
+def show_q():
+    ResGroupBox.hide()
+    QuestionGroupBox.show()
+    Btn.setText('Ответить')
+    RadioGroup.setExclusive(False)
+    btn1.setChecked(False)
+    btn2.setChecked(False)
+    btn3.setChecked(False)
+    btn4.setChecked(False)
+    RadioGroup.setExclusive(True)
+
+answer = [btn1, btn2, btn3, btn4]
+
+def ask(q:Q):
+    shuffle(answer)
+    answer[0].setText(q.right)
+    answer[1].setText(q.wrong1)
+    answer[2].setText(q.wrong2)
+    answer[3].setText(q.wrong3)
+    Res.setText(q.q)
+    Total.setText(q.right)
+    show_q()
+    
+def show_answer(res):
+    Correct.setText(res)
+    show_res()
+
+
+def check_answer():
+    if answer[0].isChecked():
+        show_answer('Верно! :-)')
+        win.score += 1
+        print('Статистика:')
+        print('Количество вопросов:', win.total) 
+        print('Верных ответов:', win.score) 
+        print('Рейтинг:', win.score/win.total*100,  '%')
+    else:
+        if answer[1].isChecked() or answer[2].isChecked() or answer[3].isChecked():
+            show_answer('Неверно! :-(')
+            print('Статистика:')
+            print('Количество вопросов:', win.total)
+            print('Верных ответов:', win.score) 
+            print('Рейтинг:', win.score/win.total*100,  '%')
+
+def next_question():
+    win.total += 1
+    print('Статистика:')
+    print('Количество вопросов:', win.total)
+    
+    cur_question = randint(0, len(question_list) - 1)
+    q = question_list[cur_question]
+    ask(q)
+
+def click():
+    if Btn.text() == 'Ответить':
+        check_answer()
+    else:
+        next_question()
+    
+win = QWidget()
+win.setWindowTitle('Memory card')
+win.score = 0
+win.total = 0
+next_question()
+win.setLayout(layout_card)
+Btn.clicked.connect(click)
+
+win.show()
+app.exec_()
